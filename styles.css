@@ -11,3 +11,7 @@ body {
   background-color: #121212; /* тёмный фон */
   color: #ffffff;            /* светлый текст */
 }
+.container {
+  width: 90%;   /* вместо 1200px */
+  margin: auto;
+}
