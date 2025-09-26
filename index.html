@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Список заданий</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --btn-bg: #f2f2f2;
+      --btn-text: #111111;
+      --btn-border: #d0d0d0;
+    }
+
+    .dark {
+      --bg: #000000;
+      --text: #f5f5f5;
+      --btn-bg: #1f1f1f;
+      --btn-text: #f5f5f5;
+      --btn-border: #333333;
+    }
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      padding: 8px 12px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--btn-border);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    h1 {
+      margin: 60px 20px 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0 20px;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--btn-border);
+      border-radius: 4px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    li:hover {
+      transform: scale(1.02);
+      background: rgba(127,127,127,0.1);
+    }
+
+    li.done span {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .delete-btn {
+      margin-left: 10px;
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .add-task {
+      display: flex;
+      gap: 10px;
+      margin: 20px;
+    }
+
+    .add-task input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--btn-border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .add-task button {
+      padding: 8px 12px;
+      border: 1px solid var(--btn-border);
+      border-radius: 4px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle">🌞 Светлая</button>
+
+  <h1>Мой список заданий</h1>
+
+  <form class="add-task" id="addTaskForm">
+    <input type="text" id="taskInput" placeholder="Введите новое задание..." />
+    <button type="submit">Добавить</button>
+  </form>
+
+  <ul id="taskList"></ul>
+
+  <script>
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const taskList = document.getElementById('taskList');
+    const form = document.getElementById('addTaskForm');
+    const input = document.getElementById('taskInput');
+
+    // --- Тема ---
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) root.classList.toggle('dark', savedTheme === 'dark');
+    updateButton();
+
+    btn.addEventListener('click', () => {
+      root.classList.toggle('dark');
+      const theme = root.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('theme', theme);
+      updateButton();
+    });
+
+    function updateButton() {
+      btn.textContent = root.classList.contains('dark') ? '🌙 Тёмная' : '🌞 Светлая';
+    }
+
+    // --- Задачи ---
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        if (task.done) li.classList.add('done');
+
+        const span = document.createElement('span');
+        span.textContent = task.text;
+        span.addEventListener('click', () => toggleTask(index));
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Удалить';
+        delBtn.className = 'delete-btn';
+        delBtn.addEventListener('click', () => deleteTask(index));
+
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        taskList.appendChild(li);
+      });
+    }
+
+    function addTask(text) {
+      tasks.push({ text, done: false });
+      saveTasks();
+    }
+
+    function toggleTask(index) {
+      tasks[index].done = !tasks[index].done;
+      saveTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+    }
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (text) {
+        addTask(text);
+        input.value = '';
+      }
+    });
+
+    // Первичная отрисовка
+    renderTasks();
+  </script>
+</body>
+</html>
