@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заметки (Index2)</title>
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: #15151a;
+      --text: #f5f7fa;
+      --muted: #9aa3ad;
+      --accent: #4f7cff;
+      --danger: #e24a4a;
+      --border: #22252b;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    .back {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.1s ease;
+    }
+    .back:hover { border-color: var(--accent); }
+    .back:active { transform: translateY(1px); }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 20px 24px;
+    }
+
+    .panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    textarea, input[type="file"] {
+      width: 100%;
+      box-sizing: border-box;
+      background: #0b0c0f;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea::placeholder { color: var(--muted); }
+
+    button.add {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: transform 0.1s ease, filter 0.2s ease;
+    }
+    button.add:hover { filter: brightness(1.05); }
+    button.add:active { transform: translateY(1px); }
+
+    .status {
+      margin: 12px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .status strong {
+      color: #fff;
+      font-weight: 600;
+    }
+    .status .limit {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .note {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .note .meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .note .text {
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .note img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .note .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0b0c0f;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      transition: border-color 0.2s ease, transform 0.1s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    .btn-danger {
+      border-color: var(--danger);
+      color: #fff;
+      background: #1a0e0e;
+    }
+    .btn-danger:hover { filter: brightness(1.05); }
+
+    .hidden { display: none !important; }
+    .disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Лист заметок</h1>
+    <button class="back" onclick="window.location.href='index.html'">Назад к задачам</button>
+  </header>
+
+  <div class="container">
+    <form id="noteForm" class="panel">
+      <textarea id="noteText" rows="3" placeholder="Текст заметки..."></textarea>
+      <input id="noteImage" type="file" accept="image/*" />
+      <button type="submit" class="add">Добавить</button>
+    </form>
+    <div id="status" class="status">Заметок: <strong id="count">0</strong> / 10</div>
+
+    <div id="limitNotice" class="status hidden">
+      Лимит достигнут: <span class="limit">10 заметок</span>. Удалите одну, чтобы добавить новую.
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    const LS_KEY = 'index2_notes';
+    const form = document.getElementById('noteForm');
+    const noteText = document.getElementById('noteText');
+    const noteImage = document.getElementById('noteImage');
+    const grid = document.getElementById('grid');
+    const countEl = document.getElementById('count');
+    const limitNotice = document.getElementById('limitNotice');
+
+    let notes = [];
+
+    // Загрузка из localStorage
+    try {
+      notes = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    } catch {
+      notes = [];
+    }
+
+    function save() {
+      localStorage.setItem(LS_KEY, JSON.stringify(notes));
+    }
+
+    function updateStatus() {
+      countEl.textContent = String(notes.length);
+      const atLimit = notes.length >= 10;
+      limitNotice.classList.toggle('hidden', !atLimit);
+      form.classList.toggle('disabled', atLimit);
+    }
+
+    function render() {
+      grid.innerHTML = '';
+      notes.forEach(note => {
+        const card = document.createElement('div');
+        card.className = 'note';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `<span>${note.date}</span><span>ID: ${note.id}</span>`;
+        card.appendChild(meta);
+
+        if (note.text) {
+          const text = document.createElement('div');
+          text.className = 'text';
+          text.textContent = note.text;
+          card.appendChild(text);
+        }
+
+        if (note.image) {
+          const img = document.createElement('img');
+          img.src = note.image;
+          img.alt = 'Скриншот заметки';
+          card.appendChild(img);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const del = document.createElement('button');
+        del.className = 'btn btn-danger';
+        del.textContent = 'Удалить';
+        del.addEventListener('click', () => {
+          notes = notes.filter(n => n.id !== note.id);
+          save();
+          updateStatus();
+          render();
+        });
+
+        const edit = document.createElement('button');
+        edit.className = 'btn';
+        edit.textContent = 'Редактировать';
+        edit.addEventListener('click', async () => {
+          const newText = prompt('Измените текст заметки:', note.text || '');
+          if (newText === null) return;
+          const trimmed = newText.trim();
+          notes = notes.map(n => n.id === note.id ? { ...n, text: trimmed } : n);
+          save();
+          render();
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+        card.appendChild(actions);
+
+        grid.appendChild(card);
+      });
+    }
+
+    async function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (notes.length >= 10) return;
+
+      const text = noteText.value.trim();
+      const file = noteImage.files[0];
+
+      if (!text && !file) {
+        noteText.focus();
+        return;
+      }
+
+      let imageDataUrl = null;
+      if (file) {
+        try {
+          imageDataUrl = await fileToDataURL(file);
+        } catch {
+          alert('Не удалось прочитать файл скриншота.');
+          return;
+        }
+      }
+
+      const note = {
+        id: Date.now() + Math.random(),
+        text,
+        image: imageDataUrl,
+        date: new Date().toLocaleString()
+      };
+
+      notes.unshift(note); // новая заметка сверху
+      save();
+      updateStatus();
+      render();
+      form.reset();
+    });
+
+    // Инициализация
+    updateStatus();
+    render();
+  </script>
+</body>
+</html>
