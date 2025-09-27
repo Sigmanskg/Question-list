@@ -11,101 +11,94 @@
       --btn-bg: #f2f2f2;
       --btn-text: #111111;
       --btn-border: #d0d0d0;
+      --accent: #4caf50;
     }
-
     .dark {
       --bg: #000000;
       --text: #f5f5f5;
       --btn-bg: #1f1f1f;
       --btn-text: #f5f5f5;
       --btn-border: #333333;
+      --accent: #66bb6a;
     }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: sans-serif;
+      font-family: system-ui, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       transition: background 0.3s, color 0.3s;
     }
-
     .theme-toggle {
-      position: fixed;
-      top: 12px;
-      right: 12px;
+      position: fixed; top: 12px; right: 12px;
       padding: 8px 12px;
-      background: var(--btn-bg);
-      color: var(--btn-text);
+      background: var(--btn-bg); color: var(--btn-text);
       border: 1px solid var(--btn-border);
-      border-radius: 6px;
-      cursor: pointer;
+      border-radius: 6px; cursor: pointer;
     }
-
-    h1 {
-      margin: 60px 20px 20px;
+    h1 { margin: 60px 20px 10px; }
+    .controls {
+      display: flex; gap: 12px; align-items: center;
+      margin: 0 20px 10px; flex-wrap: wrap;
     }
-
-    ul {
-      list-style: none;
-      padding: 0 20px;
+    .group {
+      display: flex; gap: 8px; align-items: center;
     }
-
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      margin-bottom: 8px;
-      border: 1px solid var(--btn-border);
-      border-radius: 4px;
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      cursor: pointer;
-      transition: transform 0.2s, background 0.3s;
+    .group button, .group select {
+      padding: 6px 10px;
+      border: 1px solid var(--btn-border); border-radius: 4px;
+      background: var(--btn-bg); color: var(--btn-text); cursor: pointer;
     }
-
-    li:hover {
-      transform: scale(1.02);
-      background: rgba(127,127,127,0.1);
+    .group button.active, .group select.active { outline: 2px solid #888; }
+    .progress-wrap { width: calc(100% - 40px); margin: 0 20px 10px; }
+    .progress-bar {
+      height: 12px; background: #bbb; border-radius: 6px; overflow: hidden;
     }
-
-    li.done span {
-      text-decoration: line-through;
-      opacity: 0.6;
+    .progress-fill {
+      height: 100%; background: var(--accent); width: 0%; transition: width 0.3s;
     }
-
-    .delete-btn {
-      margin-left: 10px;
-      background: crimson;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-
+    .progress-text { margin-top: 6px; font-weight: 600; }
     .add-task {
-      display: flex;
-      gap: 10px;
-      margin: 20px;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px; margin: 20px;
     }
-
-    .add-task input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid var(--btn-border);
-      border-radius: 4px;
-      background: var(--bg);
-      color: var(--text);
+    .add-task input, .add-task select, .add-task button {
+      padding: 8px; border: 1px solid var(--btn-border);
+      border-radius: 4px; background: var(--bg); color: var(--text);
     }
-
-    .add-task button {
-      padding: 8px 12px;
-      border: 1px solid var(--btn-border);
-      border-radius: 4px;
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      cursor: pointer;
+    .add-task button { cursor: pointer; }
+    ul { list-style: none; padding: 0 20px; margin: 0; }
+    li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px; margin-bottom: 8px;
+      border: 1px solid var(--btn-border); border-radius: 6px;
+      background: var(--btn-bg); color: var(--btn-text);
+      transition: transform 0.2s, background 0.3s, border-color 0.2s;
+    }
+    li:hover { transform: scale(1.01); background: rgba(127,127,127,0.08); }
+    .content { display: grid; gap: 4px; flex: 1; min-width: 0; }
+    .title {
+      font-weight: 600; cursor: text; word-wrap: break-word; overflow-wrap: anywhere;
+    }
+    .title.editing input {
+      width: 100%; padding: 6px 8px; border: 1px solid var(--btn-border);
+      border-radius: 4px; background: var(--bg); color: var(--text);
+    }
+    .meta { font-size: 0.9em; opacity: 0.85; display: flex; gap: 10px; flex-wrap: wrap; }
+    .done .title { text-decoration: line-through; opacity: 0.6; }
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 6px 10px; border: 1px solid var(--btn-border);
+      border-radius: 4px; background: var(--bg); color: var(--text); cursor: pointer;
+    }
+    .delete-btn { background: crimson; color: #fff; border: none; }
+    .priority-low { color: #2e7d32; }
+    .priority-medium { color: #f9a825; }
+    .priority-high { color: #d32f2f; font-weight: 600; }
+    .overdue { border-color: #d32f2f; }
+    .badge {
+      padding: 2px 6px; border: 1px solid var(--btn-border);
+      border-radius: 999px; background: var(--bg);
     }
   </style>
 </head>
@@ -114,90 +107,348 @@
 
   <h1>Мой список заданий</h1>
 
+  <div class="controls">
+    <div class="group filters">
+      <button data-filter="all" class="active">Все</button>
+      <button data-filter="active">Активные</button>
+      <button data-filter="done">Выполненные</button>
+      <select id="categoryFilter">
+        <option value="all">Все категории</option>
+        <option value="Учёба">Учёба</option>
+        <option value="Работа">Работа</option>
+        <option value="Личное">Личное</option>
+      </select>
+    </div>
+    <div class="group sorts">
+      <button data-sort="none" class="active">Без сортировки</button>
+      <button data-sort="priority">По приоритету</button>
+      <button data-sort="deadline">По дедлайну</button>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+    <div id="progressText" class="progress-text">✅ 0 / 0</div>
+  </div>
+
   <form class="add-task" id="addTaskForm">
     <input type="text" id="taskInput" placeholder="Введите новое задание..." />
+    <input type="date" id="taskDate" />
+    <select id="taskPriority">
+      <option value="low">Низкий</option>
+      <option value="medium" selected>Средний</option>
+      <option value="high">Высокий</option>
+    </select>
+    <select id="taskCategory">
+      <option value="Учёба">Учёба</option>
+      <option value="Работа">Работа</option>
+      <option value="Личное">Личное</option>
+    </select>
     <button type="submit">Добавить</button>
   </form>
 
   <ul id="taskList"></ul>
 
   <script>
+    // Элементы
     const root = document.documentElement;
-    const btn = document.getElementById('themeToggle');
+    const themeBtn = document.getElementById('themeToggle');
     const taskList = document.getElementById('taskList');
     const form = document.getElementById('addTaskForm');
     const input = document.getElementById('taskInput');
+    const dateInput = document.getElementById('taskDate');
+    const priorityInput = document.getElementById('taskPriority');
+    const categoryInput = document.getElementById('taskCategory');
+    const filterButtons = document.querySelectorAll('.filters button');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const sortButtons = document.querySelectorAll('.sorts button');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    // Состояние
+    let currentFilter = 'all';     // all | active | done
+    let currentCategory = 'all';   // all | Учёба | Работа | Личное
+    let currentSort = 'none';      // none | priority | deadline
+    let tasks = loadTasks();
 
     // --- Тема ---
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) root.classList.toggle('dark', savedTheme === 'dark');
-    updateButton();
-
-    btn.addEventListener('click', () => {
+    updateThemeButton();
+    themeBtn.addEventListener('click', () => {
       root.classList.toggle('dark');
-      const theme = root.classList.contains('dark') ? 'dark' : 'light';
-      localStorage.setItem('theme', theme);
-      updateButton();
+      localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeButton();
     });
-
-    function updateButton() {
-      btn.textContent = root.classList.contains('dark') ? '🌙 Тёмная' : '🌞 Светлая';
+    function updateThemeButton() {
+      themeBtn.textContent = root.classList.contains('dark') ? '🌙 Тёмная' : '🌞 Светлая';
     }
 
-    // --- Задачи ---
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    // --- Хранилище ---
+    function loadTasks() {
+      try {
+        const arr = JSON.parse(localStorage.getItem('tasks')) || [];
+        return arr.map(t => ({
+          id: t.id || genId(),
+          text: typeof t.text === 'string' ? t.text : '',
+          done: !!t.done,
+          deadline: t.deadline || null,
+          priority: t.priority || 'medium',
+          category: t.category || 'Личное'
+        }));
+      } catch {
+        return [];
+      }
+    }
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    function genId() {
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
 
+    // --- Уведомления (напоминания) ---
+    if ('Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+      }
+      notifyTodayTasks();
+    }
+    function notifyTodayTasks() {
+      if (Notification.permission !== 'granted') return;
+      const today = isoToday();
+      const dueToday = tasks.filter(t => t.deadline === today && !t.done);
+      if (dueToday.length > 0) {
+        new Notification('Напоминание о задачах', {
+          body: `На сегодня: ${dueToday.map(t => t.text).join(', ')}`,
+        });
+      }
+    }
+
+    // --- Рендер ---
     function renderTasks() {
       taskList.innerHTML = '';
-      tasks.forEach((task, index) => {
+
+      let filtered = tasks.filter(t => {
+        if (currentFilter === 'active' && t.done) return false;
+        if (currentFilter === 'done' && !t.done) return false;
+        if (currentCategory !== 'all' && t.category !== currentCategory) return false;
+        return true;
+      });
+
+      if (currentSort === 'priority') {
+        const order = { high: 1, medium: 2, low: 3 };
+        filtered.sort((a, b) => order[a.priority] - order[b.priority]);
+      } else if (currentSort === 'deadline') {
+        filtered.sort((a, b) => (a.deadline || '9999-12-31').localeCompare(b.deadline || '9999-12-31'));
+      }
+
+      const today = isoToday();
+
+      filtered.forEach(task => {
         const li = document.createElement('li');
         if (task.done) li.classList.add('done');
+        if (task.deadline && task.deadline < today && !task.done) li.classList.add('overdue');
 
-        const span = document.createElement('span');
-        span.textContent = task.text;
-        span.addEventListener('click', () => toggleTask(index));
+        const content = document.createElement('div');
+        content.className = 'content';
+
+        // Заголовок — инлайн‑редактирование
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = task.text || '(без названия)';
+        title.addEventListener('click', () => startInlineEdit(title, task.id));
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const priorityLabel = labelPriority(task.priority);
+        const deadlineLabel = task.deadline ? `до ${task.deadline}` : 'без дедлайна';
+        const categoryLabel = `категория: ${task.category}`;
+        const prioritySpan = document.createElement('span');
+        prioritySpan.className = `priority-${task.priority}`;
+        prioritySpan.textContent = `приоритет: ${priorityLabel}`;
+        const deadlineSpan = document.createElement('span');
+        deadlineSpan.textContent = deadlineLabel;
+        const catSpan = document.createElement('span');
+        catSpan.className = 'badge';
+        catSpan.textContent = categoryLabel;
+        meta.appendChild(prioritySpan);
+        meta.appendChild(deadlineSpan);
+        meta.appendChild(catSpan);
+
+        content.appendChild(title);
+        content.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'btn';
+        toggleBtn.type = 'button';
+        toggleBtn.textContent = task.done ? 'Вернуть' : 'Готово';
+        toggleBtn.addEventListener('click', () => {
+          updateTask(task.id, { done: !task.done });
+        });
+
+        const editMetaBtn = document.createElement('button');
+        editMetaBtn.className = 'btn';
+        editMetaBtn.type = 'button';
+        editMetaBtn.textContent = 'Правка';
+        editMetaBtn.addEventListener('click', () => openMetaEdit(task));
 
         const delBtn = document.createElement('button');
-        delBtn.textContent = 'Удалить';
         delBtn.className = 'delete-btn';
-        delBtn.addEventListener('click', () => deleteTask(index));
+        delBtn.type = 'button';
+        delBtn.textContent = 'Удалить';
+        delBtn.addEventListener('click', () => {
+          tasks = tasks.filter(t => t.id !== task.id);
+          saveTasks();
+          renderTasks();
+          updateProgress();
+        });
 
-        li.appendChild(span);
-        li.appendChild(delBtn);
+        actions.appendChild(toggleBtn);
+        actions.appendChild(editMetaBtn);
+        actions.appendChild(delBtn);
+
+        li.appendChild(content);
+        li.appendChild(actions);
         taskList.appendChild(li);
+      });
+
+      updateProgress();
+      updateControlStates();
+    }
+
+    function labelPriority(p) {
+      if (p === 'low') return 'низкий';
+      if (p === 'high') return 'высокий';
+      return 'средний';
+    }
+
+    function isoToday() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function updateProgress() {
+      const total = tasks.length;
+      const done = tasks.filter(t => t.done).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      progressFill.style.width = pct + '%';
+      progressText.textContent = `✅ ${done} / ${total}`;
+    }
+
+    function updateControlStates() {
+      filterButtons.forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+      sortButtons.forEach(b => b.classList.toggle('active', b.dataset.sort === currentSort));
+      categoryFilter.classList.toggle('active', currentCategory !== 'all');
+    }
+
+    // --- Инлайн‑редактирование титула ---
+    function startInlineEdit(titleEl, id) {
+      if (titleEl.classList.contains('editing')) return;
+      titleEl.classList.add('editing');
+      const task = tasks.find(t => t.id === id);
+      const inputEl = document.createElement('input');
+      inputEl.type = 'text';
+      inputEl.value = task.text || '';
+      titleEl.textContent = '';
+      titleEl.appendChild(inputEl);
+      inputEl.focus();
+      inputEl.select();
+
+      const finish = (commit) => {
+        titleEl.classList.remove('editing');
+        if (commit) {
+          const newText = inputEl.value.trim();
+          if (newText) updateTask(id, { text: newText }, false);
+        }
+        titleEl.textContent = tasks.find(t => t.id === id).text || '(без названия)';
+      };
+
+      inputEl.addEventListener('blur', () => finish(true));
+      inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') finish(true);
+        else if (e.key === 'Escape') finish(false);
       });
     }
 
-    function addTask(text) {
-      tasks.push({ text, done: false });
+    // --- Правка мета‑данных (приоритет, дедлайн, категория) ---
+    function openMetaEdit(task) {
+      const newDeadline = prompt('Дедлайн (YYYY-MM-DD):', task.deadline || '');
+      if (newDeadline === null) return;
+      const newPriority = prompt('Приоритет (low/medium/high):', task.priority || 'medium');
+      if (newPriority === null) return;
+      const newCategory = prompt('Категория (Учёба/Работа/Личное):', task.category || 'Личное');
+      if (newCategory === null) return;
+
+      const deadline = (newDeadline || '').trim() || null;
+      const priorityClean = (newPriority || '').trim();
+      const categoryClean = (newCategory || '').trim();
+
+      const priority = ['low', 'medium', 'high'].includes(priorityClean) ? priorityClean : task.priority;
+      const category = ['Учёба', 'Работа', 'Личное'].includes(categoryClean) ? categoryClean : task.category;
+
+      updateTask(task.id, { deadline, priority, category });
+    }
+
+    function updateTask(id, patch, rerender = true) {
+      const idx = tasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      tasks[idx] = { ...tasks[idx], ...patch };
       saveTasks();
+      if (rerender) {
+        renderTasks();
+      } else {
+        updateProgress();
+      }
     }
 
-    function toggleTask(index) {
-      tasks[index].done = !tasks[index].done;
-      saveTasks();
-    }
-
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      saveTasks();
-    }
-
-    function saveTasks() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      renderTasks();
-    }
-
+    // --- Добавление ---
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const text = input.value.trim();
-      if (text) {
-        addTask(text);
-        input.value = '';
+      const text = (input.value || '').trim();
+      if (!text) return;
+      const deadline = dateInput.value || null;
+      const priority = priorityInput.value || 'medium';
+      const category = categoryInput.value || 'Личное';
+
+      const task = { id: genId(), text, done: false, deadline, priority, category };
+      tasks.push(task);
+      saveTasks();
+      input.value = '';
+      dateInput.value = '';
+      priorityInput.value = 'medium';
+      categoryInput.value = 'Личное';
+      renderTasks();
+
+      // Напоминание, если задача на сегодня
+      if ('Notification' in window && Notification.permission === 'granted') {
+        if (deadline && deadline === isoToday()) {
+          new Notification('Новая задача на сегодня', { body: task.text });
+        }
       }
     });
 
-    // Первичная отрисовка
+    // --- Фильтры и сортировки ---
+    filterButtons.forEach(b => {
+      b.addEventListener('click', () => {
+        currentFilter = b.dataset.filter;
+        renderTasks();
+      });
+    });
+    categoryFilter.addEventListener('change', () => {
+      currentCategory = categoryFilter.value;
+      renderTasks();
+    });
+    sortButtons.forEach(b => {
+      b.addEventListener('click', () => {
+        currentSort = b.dataset.sort;
+        renderTasks();
+      });
+    });
+
+    // Первичный рендер
     renderTasks();
   </script>
 </body>
